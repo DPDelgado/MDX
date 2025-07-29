@@ -1,7 +1,19 @@
+WITH
+SET [LastTwoFYs] AS
+    TAIL(
+        ORDER(
+            [Closure Date].[Closure Date].[Fiscal Year].MEMBERS,
+            VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
+            ASC
+        ),
+        2
+    )
+
 SELECT
     {
         [Measures].[Closed Consults]
-    }ON 0,
+    } ON 0,
+
     NONEMPTY(
         CROSSJOIN(
             CROSSJOIN(
@@ -10,21 +22,19 @@ SELECT
                         FILTER(
                             [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN].ALLMEMBERS,
                             (
-                                NOT(ISEMPTY(
+                                NOT ISEMPTY(
                                     ANCESTOR(
                                         [Location - Receiving Facility].[Receiving VISN Hierarchy].CURRENTMEMBER,
                                         [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN]
                                     ).MEMBER_CAPTION
-                                ))
-                            AND
-                                (
-                                    ANCESTOR(
-                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].CURRENTMEMBER,
-                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN]
-                                    ).MEMBER_CAPTION
-                                =
-                                    "V19"
                                 )
+                            )
+                            AND
+                            (
+                                ANCESTOR(
+                                    [Location - Receiving Facility].[Receiving VISN Hierarchy].CURRENTMEMBER,
+                                    [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN]
+                                ).MEMBER_CAPTION = "V19"
                             )
                         ),
                         [Location - Receiving Facility].[Receiving VISN Hierarchy].[Facility],
@@ -33,26 +43,7 @@ SELECT
                 ),
                 ADDCALCULATEDMEMBERS(
                     DESCENDANTS(
-                        FILTER(
-                            [Closure Date].[Closure Date].[Fiscal Year].ALLMEMBERS,
-                            (
-                                NOT(ISEMPTY(
-                                    ANCESTOR(
-                                        [Closure Date].[Closure Date].CURRENTMEMBER,
-                                        [Closure Date].[Closure Date].[Fiscal Year]
-                                    ).MEMBER_CAPTION
-                                ))
-                            AND
-                                (
-                                    ANCESTOR(
-                                        [Closure Date].[Closure Date].CURRENTMEMBER,
-                                        [Closure Date].[Closure Date].[Fiscal Year]
-                                    ).MEMBER_CAPTION
-                                =
-                                    "FY25"
-                                )
-                            )
-                        ),
+                        [LastTwoFYs],
                         [Closure Date].[Closure Date].[Day],
                         LEAVES
                     )
@@ -65,4 +56,5 @@ SELECT
         }
     )
     PROPERTIES MEMBER_CAPTION, MEMBER_UNIQUE_NAME ON 1
-FROM [Consults] CELL PROPERTIES VALUE
+FROM [Consults]
+CELL PROPERTIES VALUE
