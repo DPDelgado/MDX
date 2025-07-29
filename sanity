@@ -1,5 +1,4 @@
 WITH
--- Only include members that begin with "FY" and have valid numeric year suffix
 SET [ValidFiscalYears] AS
     FILTER(
         [Closure Date].[Closure Date].[Fiscal Year].MEMBERS,
@@ -7,16 +6,14 @@ SET [ValidFiscalYears] AS
         AND ISNUMERIC(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))
     )
 
--- Convert 2-digit years to full 4-digit values for sorting
--- e.g., FY03 → 2003, FY25 → 2025
 SET [LastTwoFYs] AS
     TAIL(
         ORDER(
             [ValidFiscalYears],
             IIF(
                 VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)) < 50,
-                VAL("20" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),  -- FY03 → 2003
-                VAL("19" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))   -- FY94 → 1994
+                VAL("20" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
+                VAL("19" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))
             ),
             DESC
         ),
@@ -24,5 +21,6 @@ SET [LastTwoFYs] AS
     )
 
 SELECT
-    [LastTwoFYs] ON ROWS
+    {[Measures].[Closed Consults]} ON 0,  -- AXIS 0 REQUIRED
+    [LastTwoFYs] ON 1                     -- AXIS 1 (ROWS)
 FROM [Consults]
