@@ -1,4 +1,30 @@
+WITH
+SET [ValidFiscalYears] AS
+    FILTER(
+        [Closure Date].[Closure Date].[Fiscal Year].MEMBERS,
+        LEFT([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 2) = "FY"
+        AND ISNUMERIC(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))
+    )
 
+SET [LastTwoFYs] AS
+    TAIL(
+        ORDER(
+            [ValidFiscalYears],
+            VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
+            DESC
+        ),
+        2
+    )
+
+SET [ClosureDaysInLastTwoFYs] AS
+    GENERATE(
+        [LastTwoFYs],
+        DESCENDANTS(
+            [Closure Date].[Closure Date].CURRENTMEMBER,
+            [Closure Date].[Closure Date].[Day],
+            LEAVES
+        )
+    )
 SELECT
     {
         [Measures].[Closed Consults]
