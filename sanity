@@ -1,0 +1,21 @@
+WITH
+SET [ValidFiscalYears] AS
+    FILTER(
+        [Closure Date].[Closure Date].[Fiscal Year].MEMBERS,
+        LEFT([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 2) = "FY"
+        AND ISNUMERIC(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))
+    )
+
+SET [LastTwoFYs] AS
+    TAIL(
+        ORDER(
+            [ValidFiscalYears],
+            VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
+            DESC
+        ),
+        2
+    )
+
+SELECT
+    [LastTwoFYs] ON ROWS
+FROM [Consults]
