@@ -10,8 +10,12 @@ SET [LastTwoFYs] AS
     TAIL(
         ORDER(
             [ValidFiscalYears],
-            VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
-            DESC
+            IIF(
+                VAL(MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)) < 50,
+                VAL("20" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2)),
+                VAL("19" + MID([Closure Date].[Closure Date].CURRENTMEMBER.NAME, 3, 2))
+            ),
+            ASC
         ),
         2
     )
@@ -25,6 +29,7 @@ SET [ClosureDaysInLastTwoFYs] AS
             LEAVES
         )
     )
+
 SELECT
     {
         [Measures].[Closed Consults]
