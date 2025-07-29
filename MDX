@@ -9,6 +9,16 @@ SET [LastTwoFYs] AS
         2
     )
 
+SET [ClosureDaysInLastTwoFYs] AS
+    GENERATE(
+        [LastTwoFYs],
+        DESCENDANTS(
+            [Closure Date].[Closure Date].CURRENTMEMBER,
+            [Closure Date].[Closure Date].[Day],
+            LEAVES
+        )
+    )
+
 SELECT
     {
         [Measures].[Closed Consults]
@@ -42,11 +52,7 @@ SELECT
                     )
                 ),
                 ADDCALCULATEDMEMBERS(
-                    DESCENDANTS(
-                        [LastTwoFYs],
-                        [Closure Date].[Closure Date].[Day],
-                        LEAVES
-                    )
+                    [ClosureDaysInLastTwoFYs]
                 )
             ),
             [Receiving Service - Classification].[Consult Service Name].[Consult Service Name].ALLMEMBERS
