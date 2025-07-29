@@ -1,0 +1,68 @@
+SELECT
+    {
+        [Measures].[Closed Consults]
+    }ON 0,
+    NONEMPTY(
+        CROSSJOIN(
+            CROSSJOIN(
+                ADDCALCULATEDMEMBERS(
+                    DESCENDANTS(
+                        FILTER(
+                            [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN].ALLMEMBERS,
+                            (
+                                NOT(ISEMPTY(
+                                    ANCESTOR(
+                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].CURRENTMEMBER,
+                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN]
+                                    ).MEMBER_CAPTION
+                                ))
+                            AND
+                                (
+                                    ANCESTOR(
+                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].CURRENTMEMBER,
+                                        [Location - Receiving Facility].[Receiving VISN Hierarchy].[VISN]
+                                    ).MEMBER_CAPTION
+                                =
+                                    "V19"
+                                )
+                            )
+                        ),
+                        [Location - Receiving Facility].[Receiving VISN Hierarchy].[Facility],
+                        LEAVES
+                    )
+                ),
+                ADDCALCULATEDMEMBERS(
+                    DESCENDANTS(
+                        FILTER(
+                            [Closure Date].[Closure Date].[Fiscal Year].ALLMEMBERS,
+                            (
+                                NOT(ISEMPTY(
+                                    ANCESTOR(
+                                        [Closure Date].[Closure Date].CURRENTMEMBER,
+                                        [Closure Date].[Closure Date].[Fiscal Year]
+                                    ).MEMBER_CAPTION
+                                ))
+                            AND
+                                (
+                                    ANCESTOR(
+                                        [Closure Date].[Closure Date].CURRENTMEMBER,
+                                        [Closure Date].[Closure Date].[Fiscal Year]
+                                    ).MEMBER_CAPTION
+                                =
+                                    "FY25"
+                                )
+                            )
+                        ),
+                        [Closure Date].[Closure Date].[Day],
+                        LEAVES
+                    )
+                )
+            ),
+            [Receiving Service - Classification].[Consult Service Name].[Consult Service Name].ALLMEMBERS
+        ),
+        {
+            [Measures].[Closed Consults]
+        }
+    )
+    PROPERTIES MEMBER_CAPTION, MEMBER_UNIQUE_NAME ON 1
+FROM [Consults] CELL PROPERTIES VALUE
