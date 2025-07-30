@@ -1,0 +1,18 @@
+KPI Debug Text = 
+VAR _selectedMeasure = SELECTEDMEASURE()
+VAR _placed = [Current FY Placed]
+VAR _prior = [Previous FY Placed YTD]
+VAR _open = [Total Open]
+VAR _openStart = [Start of FY Total Open]
+
+RETURN
+SWITCH(
+    TRUE(),
+    _selectedMeasure = [Current FY Placed], 
+        "Selected: Current FY Placed | " & FORMAT(_placed, "#,##0") & " vs " & FORMAT(_prior, "#,##0"),
+
+    _selectedMeasure = [Total Open], 
+        "Selected: Total Open | " & FORMAT(_open, "#,##0") & " vs " & FORMAT(_openStart, "#,##0"),
+
+    "Unknown"
+)
